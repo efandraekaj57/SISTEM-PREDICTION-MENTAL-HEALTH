@@ -4,8 +4,7 @@ import streamlit as st
 # KONFIGURASI HALAMAN
 # =============================================
 st.set_page_config(
-    page_title="Mental Health Self Check",
-    page_icon="🧠",
+    page_title="Mental Health Self Assessment",
     layout="centered"
 )
 
@@ -15,10 +14,10 @@ st.set_page_config(
 st.title("Mental Health Self-Assessment")
 st.markdown(
     """
-Aplikasi ini membantu **skrining awal** kondisi kesehatan mental  
+Aplikasi ini membantu skrining awal kondisi kesehatan mental
 berdasarkan jawaban yang Anda berikan.
 
-**Bukan diagnosis medis**
+Aplikasi ini **bukan alat diagnosis medis**.
 """
 )
 
@@ -27,8 +26,8 @@ berdasarkan jawaban yang Anda berikan.
 # =============================================
 st.subheader("Pertanyaan")
 
-feeling = st.selectbox(
-    "Bagaimana perasaan Anda akhir-akhir ini?",
+q1 = st.selectbox(
+    "1. Bagaimana perasaan Anda akhir-akhir ini?",
     [
         "Saya merasa baik-baik saja",
         "Saya merasa lelah",
@@ -37,8 +36,8 @@ feeling = st.selectbox(
     ]
 )
 
-stress = st.selectbox(
-    "Apakah Anda sering merasa stres atau cemas?",
+q2 = st.selectbox(
+    "2. Apakah Anda sering merasa stres atau cemas?",
     [
         "Jarang",
         "Kadang-kadang",
@@ -47,8 +46,8 @@ stress = st.selectbox(
     ]
 )
 
-sleep = st.selectbox(
-    "Bagaimana kualitas tidur Anda?",
+q3 = st.selectbox(
+    "3. Bagaimana kualitas tidur Anda?",
     [
         "Tidur nyenyak",
         "Kadang sulit tidur",
@@ -57,8 +56,8 @@ sleep = st.selectbox(
     ]
 )
 
-emotion = st.selectbox(
-    "Bagaimana kondisi emosi Anda?",
+q4 = st.selectbox(
+    "4. Bagaimana kondisi emosi Anda?",
     [
         "Stabil",
         "Mudah lelah",
@@ -67,8 +66,8 @@ emotion = st.selectbox(
     ]
 )
 
-interest = st.selectbox(
-    "Apakah Anda masih menikmati aktivitas sehari-hari?",
+q5 = st.selectbox(
+    "5. Apakah Anda masih menikmati aktivitas sehari-hari?",
     [
         "Masih sangat menikmati",
         "Sedikit berkurang",
@@ -77,105 +76,195 @@ interest = st.selectbox(
     ]
 )
 
+q6 = st.selectbox(
+    "6. Seberapa sering Anda merasa tidak berharga atau menyalahkan diri sendiri?",
+    [
+        "Tidak pernah",
+        "Jarang",
+        "Sering",
+        "Hampir setiap hari"
+    ]
+)
+
+q7 = st.selectbox(
+    "7. Apakah Anda sulit berkonsentrasi saat bekerja atau belajar?",
+    [
+        "Tidak",
+        "Kadang-kadang",
+        "Sering",
+        "Hampir selalu"
+    ]
+)
+
+q8 = st.selectbox(
+    "8. Apakah Anda merasa kelelahan secara fisik tanpa sebab yang jelas?",
+    [
+        "Tidak",
+        "Kadang-kadang",
+        "Sering",
+        "Hampir setiap hari"
+    ]
+)
+
+q9 = st.selectbox(
+    "9. Apakah Anda menarik diri dari lingkungan sosial?",
+    [
+        "Tidak",
+        "Sedikit",
+        "Cukup sering",
+        "Hampir selalu"
+    ]
+)
+
+q10 = st.selectbox(
+    "10. Apakah akhir-akhir ini Anda merasa kewalahan menghadapi hidup?",
+    [
+        "Tidak",
+        "Kadang-kadang",
+        "Sering",
+        "Hampir setiap hari"
+    ]
+)
+
 # =============================================
-# FUNGSI HITUNG SKOR
+# FUNGSI SKOR
 # =============================================
+def score_question(answer, low, medium, high):
+    if answer in high:
+        return 2
+    elif answer in medium:
+        return 1
+    else:
+        return 0
+
 def calculate_score():
-    score = 0
-    detail = {}
+    details = {}
 
-    # Perasaan
-    if feeling in ["Saya kehilangan semangat", "Saya merasa sangat sedih"]:
-        score += 2
-        detail["Perasaan"] = 2
-    else:
-        detail["Perasaan"] = 0
+    details["Perasaan"] = score_question(
+        q1,
+        ["Saya merasa baik-baik saja"],
+        ["Saya merasa lelah"],
+        ["Saya kehilangan semangat", "Saya merasa sangat sedih"]
+    )
 
-    # Stres
-    if stress in ["Saya sering khawatir tanpa alasan", "Saya merasa cemas hampir setiap hari"]:
-        score += 2
-        detail["Stres / Kecemasan"] = 2
-    else:
-        detail["Stres / Kecemasan"] = 0
+    details["Stres"] = score_question(
+        q2,
+        ["Jarang"],
+        ["Kadang-kadang"],
+        ["Saya sering khawatir tanpa alasan", "Saya merasa cemas hampir setiap hari"]
+    )
 
-    # Tidur
-    if sleep in ["Saya sering terbangun di malam hari", "Saya hampir tidak bisa tidur"]:
-        score += 1
-        detail["Kualitas Tidur"] = 1
-    else:
-        detail["Kualitas Tidur"] = 0
+    details["Tidur"] = score_question(
+        q3,
+        ["Tidur nyenyak"],
+        ["Kadang sulit tidur"],
+        ["Saya sering terbangun di malam hari", "Saya hampir tidak bisa tidur"]
+    )
 
-    # Emosi
-    if emotion in ["Saya sering panik dan mudah emosi", "Emosi saya sering tidak terkendali"]:
-        score += 2
-        detail["Stabilitas Emosi"] = 2
-    else:
-        detail["Stabilitas Emosi"] = 0
+    details["Emosi"] = score_question(
+        q4,
+        ["Stabil"],
+        ["Mudah lelah"],
+        ["Saya sering panik dan mudah emosi", "Emosi saya sering tidak terkendali"]
+    )
 
-    # Minat
-    if interest in ["Saya kehilangan minat yang disukai", "Saya tidak tertarik pada apa pun"]:
-        score += 2
-        detail["Minat Aktivitas"] = 2
-    else:
-        detail["Minat Aktivitas"] = 0
+    details["Minat"] = score_question(
+        q5,
+        ["Masih sangat menikmati"],
+        ["Sedikit berkurang"],
+        ["Saya kehilangan minat yang disukai", "Saya tidak tertarik pada apa pun"]
+    )
 
-    return score, detail
+    details["Harga Diri"] = score_question(
+        q6,
+        ["Tidak pernah"],
+        ["Jarang"],
+        ["Sering", "Hampir setiap hari"]
+    )
+
+    details["Konsentrasi"] = score_question(
+        q7,
+        ["Tidak"],
+        ["Kadang-kadang"],
+        ["Sering", "Hampir selalu"]
+    )
+
+    details["Kelelahan"] = score_question(
+        q8,
+        ["Tidak"],
+        ["Kadang-kadang"],
+        ["Sering", "Hampir setiap hari"]
+    )
+
+    details["Sosial"] = score_question(
+        q9,
+        ["Tidak"],
+        ["Sedikit"],
+        ["Cukup sering", "Hampir selalu"]
+    )
+
+    details["Kewalahan"] = score_question(
+        q10,
+        ["Tidak"],
+        ["Kadang-kadang"],
+        ["Sering", "Hampir setiap hari"]
+    )
+
+    total_score = sum(details.values())
+    return total_score, details
 
 # =============================================
-# PREDIKSI
+# HASIL
 # =============================================
 st.markdown("---")
 st.subheader("Hasil Penilaian")
 
 if st.button("Prediksi Sekarang"):
-    score, detail = calculate_score()
+    score, details = calculate_score()
 
-    # Tampilkan skor detail
-    st.markdown("###  Rincian Skor")
-    for k, v in detail.items():
-        st.write(f"- **{k}**: {v}")
+    st.markdown("Rincian Skor:")
+    for k, v in details.items():
+        st.write(f"- {k}: {v}")
 
-    st.markdown(f"### Total Skor: **{score} / 9**")
+    st.markdown(f"Total Skor: {score} / 20")
 
-    # Keputusan
-    if score >= 6:
-        st.error("**Berisiko Tinggi terhadap masalah kesehatan mental**")
+    if score >= 13:
+        st.error("Risiko Tinggi Masalah Kesehatan Mental")
 
         st.markdown(
             """
-### Peringatan
-Hasil ini menunjukkan adanya **indikator kuat** yang sering
-dikaitkan dengan gangguan kecemasan atau depresi.
+Peringatan:
+Hasil ini menunjukkan banyak indikator yang sering dikaitkan
+dengan gangguan kecemasan atau depresi.
 
-### 💬 Saran Profesional
-- Pertimbangkan **berbicara dengan psikolog atau psikiater**
-- Ceritakan kondisi Anda kepada **orang yang dipercaya**
-- Jika merasa sangat tertekan atau memiliki pikiran menyakiti diri:
-  **SEGERA cari bantuan profesional atau layanan darurat**
+Saran Profesional:
+- Sangat dianjurkan berkonsultasi dengan psikolog atau psikiater
+- Jangan menghadapi kondisi ini sendirian
+- Jika muncul pikiran menyakiti diri, segera cari bantuan profesional
 """
         )
 
-    elif score >= 4:
-        st.warning("**Berisiko Sedang**")
+    elif score >= 7:
+        st.warning("Risiko Sedang Masalah Kesehatan Mental")
 
         st.markdown(
             """
-### Saran
-- Perhatikan pola tidur & manajemen stres
-- Coba teknik relaksasi (napas dalam, olahraga ringan)
-- Jika kondisi berlangsung >2 minggu, **konsultasi profesional dianjurkan**
+Saran:
+- Perhatikan pola tidur, stres, dan keseimbangan aktivitas
+- Cobalah teknik relaksasi dan dukungan sosial
+- Konsultasi profesional dianjurkan jika kondisi berlanjut
 """
         )
 
     else:
-        st.success("**Relatif Stabil**")
+        st.success("Kondisi Relatif Stabil")
 
         st.markdown(
             """
-###  Tetap Jaga Kesehatan Mental
-- Pertahankan pola hidup sehat
-- Luangkan waktu untuk diri sendiri
-- Jangan ragu mencari bantuan bila kondisi berubah
+Tetap Jaga Kesehatan Mental:
+- Pertahankan kebiasaan sehat
+- Jaga komunikasi dengan orang terdekat
+- Lakukan evaluasi diri secara berkala
 """
         )
 
@@ -184,9 +273,8 @@ dikaitkan dengan gangguan kecemasan atau depresi.
 # =============================================
 st.markdown(
     """
----
-**Catatan Penting:**  
-Aplikasi ini hanya untuk **skrining awal**, bukan diagnosis medis.  
-Untuk hasil yang akurat, konsultasikan dengan tenaga profesional.
+Catatan:
+Aplikasi ini hanya untuk skrining awal dan tidak menggantikan
+diagnosis atau penanganan dari tenaga kesehatan profesional.
 """
 )
