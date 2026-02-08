@@ -1,106 +1,192 @@
 import streamlit as st
-import joblib
-import pandas as pd
-import os
 
-# ======================================================
-# PATH FILE
-# ======================================================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-MODEL_PATH = os.path.join(BASE_DIR, "best_model.pkl")
-FEATURE_PATH = os.path.join(BASE_DIR, "feature_names.pkl")
-
-# ======================================================
-# VALIDASI FILE
-# ======================================================
-if not os.path.exists(MODEL_PATH):
-    st.error("File best_model.pkl tidak ditemukan")
-    st.stop()
-
-if not os.path.exists(FEATURE_PATH):
-    st.error("File feature_names.pkl tidak ditemukan")
-    st.stop()
-
-# ======================================================
-# LOAD MODEL
-# ======================================================
-model = joblib.load(MODEL_PATH)
-feature_names = joblib.load(FEATURE_PATH)
-TOTAL_FEATURES = model.n_features_in_
-
-# ======================================================
+# =============================================
 # KONFIGURASI HALAMAN
-# ======================================================
+# =============================================
 st.set_page_config(
-    page_title="Mental Health Prediction",
+    page_title="Mental Health Self Check",
+    page_icon="🧠",
     layout="centered"
 )
 
-# ======================================================
+# =============================================
 # HEADER
-# ======================================================
-st.title("Mental Health Prediction App")
-st.write(
-    "Silakan jawab beberapa pertanyaan berikut untuk mengetahui "
-    "perkiraan kondisi kesehatan mental Anda."
+# =============================================
+st.title("Mental Health Self-Assessment")
+st.markdown(
+    """
+Aplikasi ini membantu **skrining awal** kondisi kesehatan mental  
+berdasarkan jawaban yang Anda berikan.
+
+**Bukan diagnosis medis**
+"""
 )
 
-st.markdown("---")
+# =============================================
+# INPUT PENGGUNA
+# =============================================
+st.subheader("Pertanyaan")
 
-# ======================================================
-# FORM INPUT
-# ======================================================
-st.subheader("Jawab Pertanyaan Berikut")
+feeling = st.selectbox(
+    "Bagaimana perasaan Anda akhir-akhir ini?",
+    [
+        "Saya merasa baik-baik saja",
+        "Saya merasa lelah",
+        "Saya kehilangan semangat",
+        "Saya merasa sangat sedih"
+    ]
+)
 
-q1 = st.text_input("Bagaimana perasaan Anda akhir-akhir ini?")
-q2 = st.text_input("Apakah Anda sering merasa stres atau cemas?")
-q3 = st.text_input("Bagaimana kualitas tidur Anda?")
-q4 = st.text_input("Bagaimana kondisi emosi Anda?")
-q5 = st.text_input("Apakah Anda masih menikmati aktivitas sehari-hari?")
+stress = st.selectbox(
+    "Apakah Anda sering merasa stres atau cemas?",
+    [
+        "Jarang",
+        "Kadang-kadang",
+        "Saya sering khawatir tanpa alasan",
+        "Saya merasa cemas hampir setiap hari"
+    ]
+)
 
-user_text = " ".join([q1, q2, q3, q4, q5]).lower()
+sleep = st.selectbox(
+    "Bagaimana kualitas tidur Anda?",
+    [
+        "Tidur nyenyak",
+        "Kadang sulit tidur",
+        "Saya sering terbangun di malam hari",
+        "Saya hampir tidak bisa tidur"
+    ]
+)
 
-st.markdown("---")
+emotion = st.selectbox(
+    "Bagaimana kondisi emosi Anda?",
+    [
+        "Stabil",
+        "Mudah lelah",
+        "Saya sering panik dan mudah emosi",
+        "Emosi saya sering tidak terkendali"
+    ]
+)
 
-# ======================================================
-# PREDIKSI
-# ======================================================
-if st.button("Prediksi Sekarang"):
-    if user_text.strip() == "":
-        st.warning("Silakan isi minimal satu jawaban.")
+interest = st.selectbox(
+    "Apakah Anda masih menikmati aktivitas sehari-hari?",
+    [
+        "Masih sangat menikmati",
+        "Sedikit berkurang",
+        "Saya kehilangan minat yang disukai",
+        "Saya tidak tertarik pada apa pun"
+    ]
+)
+
+# =============================================
+# FUNGSI HITUNG SKOR
+# =============================================
+def calculate_score():
+    score = 0
+    detail = {}
+
+    # Perasaan
+    if feeling in ["Saya kehilangan semangat", "Saya merasa sangat sedih"]:
+        score += 2
+        detail["Perasaan"] = 2
     else:
-        try:
-            X_input = pd.DataFrame(
-                0,
-                index=[0],
-                columns=range(TOTAL_FEATURES)
-            )
+        detail["Perasaan"] = 0
 
-            for idx, word in enumerate(feature_names):
-                if word in user_text:
-                    X_input.iloc[0, idx] = 1
+    # Stres
+    if stress in ["Saya sering khawatir tanpa alasan", "Saya merasa cemas hampir setiap hari"]:
+        score += 2
+        detail["Stres / Kecemasan"] = 2
+    else:
+        detail["Stres / Kecemasan"] = 0
 
-            prediction = model.predict(X_input)[0]
+    # Tidur
+    if sleep in ["Saya sering terbangun di malam hari", "Saya hampir tidak bisa tidur"]:
+        score += 1
+        detail["Kualitas Tidur"] = 1
+    else:
+        detail["Kualitas Tidur"] = 0
 
-            st.subheader("Hasil Prediksi")
+    # Emosi
+    if emotion in ["Saya sering panik dan mudah emosi", "Emosi saya sering tidak terkendali"]:
+        score += 2
+        detail["Stabilitas Emosi"] = 2
+    else:
+        detail["Stabilitas Emosi"] = 0
 
-            if prediction == 0:
-                st.success(
-                    "Kondisi Kesehatan Mental: "
-                    "Tidak Berisiko / Relatif Stabil"
-                )
-            else:
-                st.error(
-                    "Kondisi Kesehatan Mental: "
-                    "Berisiko Mengalami Masalah"
-                )
+    # Minat
+    if interest in ["Saya kehilangan minat yang disukai", "Saya tidak tertarik pada apa pun"]:
+        score += 2
+        detail["Minat Aktivitas"] = 2
+    else:
+        detail["Minat Aktivitas"] = 0
 
-        except Exception as e:
-            st.error(f"Terjadi kesalahan saat prediksi: {e}")
+    return score, detail
 
-# ======================================================
-# FOOTER
-# ======================================================
+# =============================================
+# PREDIKSI
+# =============================================
 st.markdown("---")
-st.caption("Model Machine Learning berbasis Text Classification")
+st.subheader("Hasil Penilaian")
+
+if st.button("Prediksi Sekarang"):
+    score, detail = calculate_score()
+
+    # Tampilkan skor detail
+    st.markdown("###  Rincian Skor")
+    for k, v in detail.items():
+        st.write(f"- **{k}**: {v}")
+
+    st.markdown(f"### Total Skor: **{score} / 9**")
+
+    # Keputusan
+    if score >= 6:
+        st.error("**Berisiko Tinggi terhadap masalah kesehatan mental**")
+
+        st.markdown(
+            """
+### Peringatan
+Hasil ini menunjukkan adanya **indikator kuat** yang sering
+dikaitkan dengan gangguan kecemasan atau depresi.
+
+### 💬 Saran Profesional
+- Pertimbangkan **berbicara dengan psikolog atau psikiater**
+- Ceritakan kondisi Anda kepada **orang yang dipercaya**
+- Jika merasa sangat tertekan atau memiliki pikiran menyakiti diri:
+  **SEGERA cari bantuan profesional atau layanan darurat**
+"""
+        )
+
+    elif score >= 4:
+        st.warning("**Berisiko Sedang**")
+
+        st.markdown(
+            """
+### Saran
+- Perhatikan pola tidur & manajemen stres
+- Coba teknik relaksasi (napas dalam, olahraga ringan)
+- Jika kondisi berlangsung >2 minggu, **konsultasi profesional dianjurkan**
+"""
+        )
+
+    else:
+        st.success("**Relatif Stabil**")
+
+        st.markdown(
+            """
+###  Tetap Jaga Kesehatan Mental
+- Pertahankan pola hidup sehat
+- Luangkan waktu untuk diri sendiri
+- Jangan ragu mencari bantuan bila kondisi berubah
+"""
+        )
+
+# =============================================
+# FOOTER
+# =============================================
+st.markdown(
+    """
+---
+**Catatan Penting:**  
+Aplikasi ini hanya untuk **skrining awal**, bukan diagnosis medis.  
+Untuk hasil yang akurat, konsultasikan dengan tenaga profesional.
+"""
+)
