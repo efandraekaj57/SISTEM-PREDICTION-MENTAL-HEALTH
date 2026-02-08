@@ -14,13 +14,13 @@ FEATURE_PATH = os.path.join(BASE_DIR, "feature_names.pkl")
 # ======================================================
 # VALIDASI FILE
 # ======================================================
-for path, name in [
-    (MODEL_PATH, "best_model.pkl"),
-    (FEATURE_PATH, "feature_names.pkl")
-]:
-    if not os.path.exists(path):
-        st.error(f"File {name} tidak ditemukan")
-        st.stop()
+if not os.path.exists(MODEL_PATH):
+    st.error("File best_model.pkl tidak ditemukan")
+    st.stop()
+
+if not os.path.exists(FEATURE_PATH):
+    st.error("File feature_names.pkl tidak ditemukan")
+    st.stop()
 
 # ======================================================
 # LOAD MODEL
@@ -31,17 +31,26 @@ feature_names = joblib.load(FEATURE_PATH)
 TOTAL_FEATURES = model.n_features_in_
 
 # ======================================================
-# UI
+# KONFIGURASI HALAMAN
 # ======================================================
-st.set_page_config(page_title="Mental Health Prediction", layout="centered")
+st.set_page_config(
+    page_title="Mental Health Prediction",
+    layout="centered"
+)
 
+# ======================================================
+# HEADER
+# ======================================================
 st.title("Mental Health Prediction App")
-st.write("Jawab pertanyaan berikut sesuai kondisi mental Anda")
+st.markdown("""
+Silakan jawab beberapa pertanyaan berikut untuk mengetahui
+perkiraan kondisi kesehatan mental Anda.
+"")
 
 st.markdown("---")
 
 # ======================================================
-# FORM INPUT (TAMPILAN MIRIP SEBELUM)
+# FORM INPUT (TAMPILAN SEPERTI SEBELUM)
 # ======================================================
 st.subheader("Jawab Pertanyaan Berikut")
 
@@ -60,26 +69,39 @@ st.markdown("---")
 # ======================================================
 if st.button("Prediksi Sekarang"):
     if user_text.strip() == "":
-        st.warning("Silakan isi minimal satu jawaban")
+        st.warning("Silakan isi minimal satu jawaban.")
     else:
         try:
-            # Buat input sesuai jumlah fitur model
+            # Buat input sesuai jumlah fitur model (300)
             X_input = pd.DataFrame(
                 0,
                 index=[0],
                 columns=range(TOTAL_FEATURES)
             )
 
-            # Isi fitur yang dikenal
+            # Isi fitur berdasarkan feature_names
             for idx, word in enumerate(feature_names):
                 if word in user_text:
                     X_input.iloc[0, idx] = 1
 
-            # PREDIKSI TANPA SCALER
+            # Prediksi
             prediction = model.predict(X_input)[0]
 
+            # ==================================================
+            # INTERPRETASI HASIL (INI BAGIAN YANG DIPERBAIKI)
+            # ==================================================
             st.subheader("Hasil Prediksi")
-            st.success(f"Kondisi Kesehatan Mental: {prediction}")
+
+            if prediction == 0:
+                st.success(
+                    "Kondisi Kesehatan Mental: "
+                    "Tidak Berisiko / Relatif Stabil"
+                )
+            else:
+                st.error(
+                    "Kondisi Kesehatan Mental: "
+                    "Berisiko Mengalami Masalah"
+                )
 
         except Exception as e:
             st.error(f"Terjadi kesalahan saat prediksi: {e}")
@@ -88,4 +110,4 @@ if st.button("Prediksi Sekarang"):
 # FOOTER
 # ======================================================
 st.markdown("---")
-st.caption("RandomForest Text Classification Model")
+st.caption("Model Machine Learning berbasis Text Classification")
