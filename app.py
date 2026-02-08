@@ -93,16 +93,22 @@ if st.button("Prediksi Sekarang"):
         st.warning("Silakan isi minimal satu jawaban.")
     else:
         try:
-            # Buat dataframe TF-IDF kosong sesuai feature training
-            tfidf_df = pd.DataFrame(0, index=[0], columns=feature_names)
+            total_features = model.n_features_in_
 
-            # Isi fitur berdasarkan kata yang muncul
-            for word in user_text.lower().split():
-                if word in tfidf_df.columns:
-                    tfidf_df.at[0, word] += 1
+            # Buat dataframe kosong sesuai jumlah fitur model
+            X_input = pd.DataFrame(
+                0,
+                index=[0],
+                columns=range(total_features)
+            )
+
+            # Isi fitur yang ADA di feature_names
+            for idx, word in enumerate(feature_names):
+                if word in user_text.lower():
+                    X_input.iloc[0, idx] = 1
 
             # Scaling
-            X_scaled = scaler.transform(tfidf_df)
+            X_scaled = scaler.transform(X_input)
 
             # Prediksi
             prediction = model.predict(X_scaled)[0]
