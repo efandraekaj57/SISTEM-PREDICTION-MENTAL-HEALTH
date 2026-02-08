@@ -27,7 +27,6 @@ if not os.path.exists(FEATURE_PATH):
 # ======================================================
 model = joblib.load(MODEL_PATH)
 feature_names = joblib.load(FEATURE_PATH)
-
 TOTAL_FEATURES = model.n_features_in_
 
 # ======================================================
@@ -42,15 +41,15 @@ st.set_page_config(
 # HEADER
 # ======================================================
 st.title("Mental Health Prediction App")
-st.markdown("""
-Silakan jawab beberapa pertanyaan berikut untuk mengetahui
-perkiraan kondisi kesehatan mental Anda.
-"")
+st.write(
+    "Silakan jawab beberapa pertanyaan berikut untuk mengetahui "
+    "perkiraan kondisi kesehatan mental Anda."
+)
 
 st.markdown("---")
 
 # ======================================================
-# FORM INPUT (TAMPILAN SEPERTI SEBELUM)
+# FORM INPUT
 # ======================================================
 st.subheader("Jawab Pertanyaan Berikut")
 
@@ -72,24 +71,18 @@ if st.button("Prediksi Sekarang"):
         st.warning("Silakan isi minimal satu jawaban.")
     else:
         try:
-            # Buat input sesuai jumlah fitur model (300)
             X_input = pd.DataFrame(
                 0,
                 index=[0],
                 columns=range(TOTAL_FEATURES)
             )
 
-            # Isi fitur berdasarkan feature_names
             for idx, word in enumerate(feature_names):
                 if word in user_text:
                     X_input.iloc[0, idx] = 1
 
-            # Prediksi
             prediction = model.predict(X_input)[0]
 
-            # ==================================================
-            # INTERPRETASI HASIL (INI BAGIAN YANG DIPERBAIKI)
-            # ==================================================
             st.subheader("Hasil Prediksi")
 
             if prediction == 0:
